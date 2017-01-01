@@ -12,6 +12,7 @@
         android:layout_marginLeft="@dimen/dp_55"
         android:layout_marginRight="@dimen/dp_55"
         android:drawableLeft="@drawable/selector_ic_person"
+        style="@style/AppTheme.EditText.Big"
         android:hint="@string/username" />
 
     <EditText
@@ -24,6 +25,7 @@
         android:layout_marginRight="@dimen/dp_55"
         android:drawableLeft="@drawable/selector_ic_lock"
         android:hint="@string/please_enter_password"
+        style="@style/AppTheme.EditText.Big"
         android:inputType="textPassword" />
 
     <TextView

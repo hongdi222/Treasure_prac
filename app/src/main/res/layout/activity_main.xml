@@ -27,6 +27,7 @@
             android:layout_weight="1"
             android:text="@string/register"
             android:textSize="16sp"
+            android:theme="@style/AppTheme.Button.Transparent"
             />
 
         <Space
@@ -36,6 +37,7 @@
         <!--使用的Widget.AppCompat.Button主题，解决选择器问题-->
         <Button
             android:id="@+id/btn_Login"
+            style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="0px"
             android:layout_height="@dimen/dp_60"
             android:layout_weight="1"
