@@ -8,7 +8,6 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -18,11 +17,13 @@ import com.feicuiedu.hunttreasure.commons.RegexUtils;
 import com.feicuiedu.hunttreasure.components.AlertDialogFragment;
 import com.feicuiedu.hunttreasure.home.HomeActivity;
 
+import org.w3c.dom.Text;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class LoginActivity extends AppCompatActivity {
+public class RegisterActivity extends AppCompatActivity {
 
     @BindView(R.id.toolbar)
     Toolbar mToolbar;
@@ -30,19 +31,19 @@ public class LoginActivity extends AppCompatActivity {
     EditText mEtUsername;
     @BindView(R.id.et_Password)
     EditText mEtPassword;
-    @BindView(R.id.btn_Login)
-    Button mBtnLogin;
-    private String mUserName;
-    private String mPassword;
+    @BindView(R.id.et_Confirm)
+    EditText mEtConfirm;
+    @BindView(R.id.btn_Register)
+    Button mBtnRegister;
 
     private ActivityUtils mActivityUtils;
-    private ProgressDialog mDialog;
+    private String mUsername;
+    private String mPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
-
+        setContentView(R.layout.activity_register);
     }
 
     @Override
@@ -51,18 +52,15 @@ public class LoginActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         mActivityUtils = new ActivityUtils(this);
 
-        // 1. 处理Toolbar的展示和返回按钮的监听
         setSupportActionBar(mToolbar);
-        if (getSupportActionBar() != null) {
-
-            // 激活Home(左上角,内部使用的选项菜单处理的),设置其title
+        if (getSupportActionBar()!=null){
+            getSupportActionBar().setTitle(R.string.register);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(R.string.login);
         }
 
-        // 给两个输入框设置监听事件
         mEtUsername.addTextChangedListener(textWatcher);
         mEtPassword.addTextChangedListener(textWatcher);
+        mEtConfirm.addTextChangedListener(textWatcher);
 
     }
 
@@ -79,65 +77,40 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         public void afterTextChanged(Editable s) {
-            mUserName = mEtUsername.getText().toString();
+            mUsername = mEtUsername.getText().toString();
             mPassword = mEtPassword.getText().toString();
-            boolean canLogin = !(TextUtils.isEmpty(mUserName) || TextUtils.isEmpty(mPassword));
-            mBtnLogin.setEnabled(canLogin);
+            String confirm = mEtConfirm.getText().toString();
+            boolean canRegister = !(TextUtils.isEmpty(mUsername)|| TextUtils.isEmpty(mPassword))&& mPassword.equals(confirm);
+            mBtnRegister.setEnabled(canRegister);
         }
     };
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.home:
-                finish();
-                break;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    /**
-     * 2. 点击按钮做登陆之前，需要处理用户名和密码的输入
-     * 2.1. 监听输入，确定可以点击按钮
-     * 2.2. 可以点击之后，处理用户名和密码输入有误的情况：弹出一个对话框，自定义一个对话框
-     *
-     * 3. 自定义一个对话框：AlertDialogFragment
-     *
-     * 4. 没有问题，去做登陆的操作，因为未加入接口等，所以模拟场景进行
-     */
-    @OnClick(R.id.btn_Login)
+    @OnClick(R.id.btn_Register)
     public void onClick() {
+
         mActivityUtils.hideSoftKeyboard();
 
-        if (RegexUtils.verifyUsername(mUserName)!=RegexUtils.VERIFY_SUCCESS){
+        if (RegexUtils.verifyUsername(mUsername)!=RegexUtils.VERIFY_SUCCESS){
 
-            // 显示用户名错误
+            // 用户名错误
             AlertDialogFragment.getInstances(
                     getString(R.string.username_error),
                     getString(R.string.username_rules))
-                    .show(getFragmentManager(),"userNameError");
+                    .show(getFragmentManager(),"usernameError");
+
             return;
         }
 
         if (RegexUtils.verifyPassword(mPassword)!=RegexUtils.VERIFY_SUCCESS){
 
-            // 显示密码错误
             AlertDialogFragment.getInstances(
                     getString(R.string.password_error),
                     getString(R.string.password_rules))
                     .show(getFragmentManager(),"passwordError");
 
             return;
-        }
 
-        // 都没错，进行登陆的操作
-        /**
-         * 3个泛型：
-         * 3. 1. 启动任务输入的参数：请求的地址、上传的数据等
-         * 3. 2. 后台任务执行的进度：一般是Integer类型(int的包装类)
-         * 3. 3. 后台返回的结果类型：比如String类型、Void等
-         *
-         */
+        }
 
         new AsyncTask<Void, Integer, Void>() {
 
@@ -157,7 +130,6 @@ public class LoginActivity extends AppCompatActivity {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-
                 return null;
             }
 
@@ -166,12 +138,15 @@ public class LoginActivity extends AppCompatActivity {
                 super.onPostExecute(aVoid);
 
                 hideProgress();
-                showMessage("登陆成功");
+                showMessage("注册成功");
                 navigationToHome();
 
             }
         }.execute();
+
     }
+
+    private ProgressDialog mDialog;
 
     private void navigationToHome() {
         mActivityUtils.startActivity(HomeActivity.class);

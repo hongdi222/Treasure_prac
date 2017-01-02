@@ -17,6 +17,10 @@
         </activity>
         <activity android:name=".user.LoginActivity">
         </activity>
+        <activity android:name=".user.RegisterActivity">
+        </activity>
+        <activity android:name=".home.HomeActivity">
+        </activity>
     </application>
 
 </manifest>
