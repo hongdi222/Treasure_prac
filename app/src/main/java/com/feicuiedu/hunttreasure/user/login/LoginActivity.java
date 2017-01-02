@@ -1,8 +1,9 @@
-package com.feicuiedu.hunttreasure.user;
+package com.feicuiedu.hunttreasure.user.login;
 
 import android.app.ProgressDialog;
-import android.os.AsyncTask;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -12,6 +13,7 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.feicuiedu.hunttreasure.MainActivity;
 import com.feicuiedu.hunttreasure.R;
 import com.feicuiedu.hunttreasure.commons.ActivityUtils;
 import com.feicuiedu.hunttreasure.commons.RegexUtils;
@@ -22,7 +24,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements LoginView{
 
     @BindView(R.id.toolbar)
     Toolbar mToolbar;
@@ -131,64 +133,37 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         // 都没错，进行登陆的操作
-        /**
-         * 3个泛型：
-         * 3. 1. 启动任务输入的参数：请求的地址、上传的数据等
-         * 3. 2. 后台任务执行的进度：一般是Integer类型(int的包装类)
-         * 3. 3. 后台返回的结果类型：比如String类型、Void等
-         *
-         */
-
-        new AsyncTask<Void, Integer, Void>() {
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-
-                showProgress();
-
-            }
-
-            @Override
-            protected Void doInBackground(Void... params) {
-
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
-
-                hideProgress();
-                showMessage("登陆成功");
-                navigationToHome();
-
-            }
-        }.execute();
+        new LoginPresenter(this).login();
     }
 
-    private void navigationToHome() {
+    @Override
+    public void navigationToHome() {
         mActivityUtils.startActivity(HomeActivity.class);
         finish();
+
+        /**
+         * 登陆之后处理一下MainActivity页面关闭的问题使用本地广播来进行
+         * 发送一个广播，在Main页面接受到之后关闭自己
+         */
+
+        Intent intent = new Intent(MainActivity.MAIN_ACTION);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-    private void showMessage(String msg) {
+    @Override
+    public void showMessage(String msg) {
         mActivityUtils.showToast(msg);
     }
 
-    private void hideProgress() {
+    @Override
+    public void hideProgress() {
         if (mDialog!=null){
             mDialog.dismiss();
         }
     }
 
-    private void showProgress() {
+    @Override
+    public void showProgress() {
         mDialog = ProgressDialog.show(this, "登陆", "正在登陆中，请稍等～");
     }
 }

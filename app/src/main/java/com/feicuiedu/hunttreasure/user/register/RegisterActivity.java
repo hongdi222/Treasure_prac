@@ -1,4 +1,4 @@
-package com.feicuiedu.hunttreasure.user;
+package com.feicuiedu.hunttreasure.user.register;
 
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
@@ -23,7 +23,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class RegisterActivity extends AppCompatActivity {
+public class RegisterActivity extends AppCompatActivity implements RegisterView{
 
     @BindView(R.id.toolbar)
     Toolbar mToolbar;
@@ -111,59 +111,32 @@ public class RegisterActivity extends AppCompatActivity {
             return;
 
         }
-
-        new AsyncTask<Void, Integer, Void>() {
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-
-                showProgress();
-
-            }
-
-            @Override
-            protected Void doInBackground(Void... params) {
-
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
-
-                hideProgress();
-                showMessage("注册成功");
-                navigationToHome();
-
-            }
-        }.execute();
+        new RegisterPresenter(this).register();
 
     }
 
     private ProgressDialog mDialog;
 
-    private void navigationToHome() {
+    @Override
+    public void navigationToHome() {
         mActivityUtils.startActivity(HomeActivity.class);
         finish();
     }
 
-    private void showMessage(String msg) {
+    @Override
+    public void showMessage(String msg) {
         mActivityUtils.showToast(msg);
     }
 
-    private void hideProgress() {
+    @Override
+    public void hideProgress() {
         if (mDialog!=null){
             mDialog.dismiss();
         }
     }
 
-    private void showProgress() {
-        mDialog = ProgressDialog.show(this, "登陆", "正在登陆中，请稍等～");
+    @Override
+    public void showProgress() {
+        mDialog = ProgressDialog.show(this, "注册", "正在注册中，请稍等～");
     }
 }

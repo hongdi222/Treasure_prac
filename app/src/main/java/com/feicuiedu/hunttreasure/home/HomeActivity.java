@@ -7,6 +7,10 @@ import com.feicuiedu.hunttreasure.R;
 
 public class HomeActivity extends AppCompatActivity {
 
+    /**
+     * 1. 处理侧滑
+     * 2. 搭建宝藏页面：百度地图的集成和基本功能实现
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
