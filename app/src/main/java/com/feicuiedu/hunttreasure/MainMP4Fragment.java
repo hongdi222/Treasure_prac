@@ -17,7 +17,6 @@ import android.view.ViewGroup;
 import java.io.FileDescriptor;
 import java.io.IOException;
 
-
 /**
  * 用于视频播放的Fragment
  */
