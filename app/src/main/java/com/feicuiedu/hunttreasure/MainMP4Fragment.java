@@ -7,12 +7,17 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.test.ActivityUnitTestCase;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.feicuiedu.hunttreasure.commons.ActivityUtils;
+
+import org.w3c.dom.Comment;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -24,10 +29,15 @@ public class MainMP4Fragment extends Fragment implements TextureView.SurfaceText
 
 
     private TextureView mTextureView;
+    private MediaPlayer mMediaPlayer;
+
+    private ActivityUtils mActivityUtils;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        mActivityUtils = new ActivityUtils(this);
 
         mTextureView = new TextureView(getContext());
         return mTextureView;
@@ -46,19 +56,22 @@ public class MainMP4Fragment extends Fragment implements TextureView.SurfaceText
         try {
             AssetFileDescriptor afd = getContext().getAssets().openFd("welcome.mp4");
             FileDescriptor fd = afd.getFileDescriptor();
-            final MediaPlayer mediaPlayer = new MediaPlayer();
-            mediaPlayer.setDataSource(fd,afd.getStartOffset(),afd.getLength());
-            mediaPlayer.prepareAsync();
-            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            mMediaPlayer = new MediaPlayer();
+            mMediaPlayer.setDataSource(fd,afd.getStartOffset(),afd.getLength());
+            mMediaPlayer.prepareAsync();
+            mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     Surface mySurface = new Surface(surface);
-                    mediaPlayer.setSurface(mySurface);
+                    mMediaPlayer.setSurface(mySurface);
+                    mMediaPlayer.setLooping(true);
+                    mMediaPlayer.seekTo(0);
+                    mMediaPlayer.start();
                 }
             });
 
         } catch (IOException e) {
-            e.printStackTrace();
+            mActivityUtils.showToast("媒体文件播放失败");
         }
 
     }
@@ -76,5 +89,14 @@ public class MainMP4Fragment extends Fragment implements TextureView.SurfaceText
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
 
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mMediaPlayer!=null){
+            mMediaPlayer.release();
+            mMediaPlayer = null;
+        }
     }
 }
