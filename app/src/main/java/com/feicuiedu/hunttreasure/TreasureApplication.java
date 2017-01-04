@@ -14,6 +14,5 @@ public class TreasureApplication extends Application {
     public void onCreate() {
         super.onCreate();
         SDKInitializer.initialize(getApplicationContext());
-
     }
 }
