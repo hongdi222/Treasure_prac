@@ -17,6 +17,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    signingConfigs {
+        // your debug keystore
+        debug{
+            storeFile file("debug.keystore")
+        }
+    }
 }
 
 dependencies {

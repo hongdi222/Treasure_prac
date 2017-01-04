@@ -1,11 +1,40 @@
 package com.feicuiedu.hunttreasure.home.map;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.baidu.location.BDLocation;
+import com.baidu.location.BDLocationListener;
+import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
+import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.BaiduMapOptions;
+import com.baidu.mapapi.map.MapStatus;
+import com.baidu.mapapi.map.MapStatusUpdateFactory;
+import com.baidu.mapapi.map.MapView;
+import com.baidu.mapapi.model.LatLng;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 import com.feicuiedu.hunttreasure.R;
 
@@ -15,10 +44,184 @@ import com.feicuiedu.hunttreasure.R;
 
 public class MapFragment extends Fragment {
 
+
+    private static final int BAIDU_READ_PHONE_STATE =100;
+    private static final int ACCESS_COARSE_LOCATION = 100;
+
+    @BindView(R.id.iv_located)
+    ImageView mIvLocated;
+    @BindView(R.id.btn_HideHere)
+    Button mBtnHideHere;
+    @BindView(R.id.centerLayout)
+    RelativeLayout mCenterLayout;
+    @BindView(R.id.tv_currentLocation)
+    TextView mTvCurrentLocation;
+    @BindView(R.id.et_treasureTitle)
+    EditText mEtTreasureTitle;
+    @BindView(R.id.layout_bottom)
+    FrameLayout mLayoutBottom;
+    @BindView(R.id.map_frame)
+    FrameLayout mMapFrame;
+    @BindView(R.id.tv_satellite)
+    TextView mTvSatellite;
+    private BaiduMap mBaiduMap;
+    private LocationClient mLocationClient;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        return inflater.inflate(R.layout.fragment_map,container);
+        View view = inflater.inflate(R.layout.fragment_map, container);
+
+//        if (ContextCompat.checkSelfPermission(getContext(),Manifest.permission.ACCESS_COARSE_LOCATION)==PackageManager.PERMISSION_DENIED) {
+        if (ContextCompat.checkSelfPermission(getContext(),Manifest.permission.ACCESS_COARSE_LOCATION)==PackageManager.PERMISSION_GRANTED) {
+            Log.i("TAG","需要权限");
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, ACCESS_COARSE_LOCATION);
+        }else {
+            Toast.makeText(getContext(), "不需要获取运行权限", Toast.LENGTH_SHORT).show();
+            Log.i("TAG","不需要权限");
+        }
+
+        ButterKnife.bind(this, view);
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        ButterKnife.bind(this, view);
+
+        initMapView();
+
+        initLocation();
+
+    }
+
+    private void initLocation() {
+
+        // 激活定位图层
+        mBaiduMap.setMyLocationEnabled(true);
+
+        // 初始化定位核心类
+        mLocationClient = new LocationClient(getContext());
+
+        // 进行一些定位的一般常规性设置
+        LocationClientOption option = new LocationClientOption();
+        option.setOpenGps(true); // 打开GPS
+        option.setScanSpan(60000);// 扫描周期,设置发起定位请求的间隔需要大于等于1000ms才是有效的
+        option.setCoorType("bd09ll");// 百度坐标类型
+        option.setLocationNotify(true);//设置是否当gps有效时按照1S1次频率输出GPS结果
+        option.SetIgnoreCacheException(false);//设置是否收集CRASH信息，默认收集
+        option.setIsNeedAddress(true);// 设置是否需要地址信息，默认不需要
+        option.setIsNeedLocationDescribe(true);//设置是否需要位置语义化结果，可以在BDLocation.getLocationDescribe里得到，结果类似于“在北京天安门附近”
+        mLocationClient.setLocOption(option);
+
+        // 设置定位的监听
+        mLocationClient.registerLocationListener(mBDLocationListener);
+
+        // 开始定位
+        mLocationClient.start();
+
+    }
+
+    private BDLocationListener mBDLocationListener = new BDLocationListener() {
+        @Override
+        public void onReceiveLocation(BDLocation bdLocation) {
+            if (bdLocation==null){
+                mLocationClient.requestLocation();
+                return;
+            }
+
+            double longitude = bdLocation.getLongitude();
+            double latitude = bdLocation.getLatitude();
+            LatLng myCurrentLocation = new LatLng(latitude,longitude);
+            String myCurrentAddr = bdLocation.getAddrStr();
+
+            Log.i("TAG","当前的经纬度："+longitude+","+latitude+",地址："+myCurrentAddr);
+        }
+    };
+
+    private void initMapView() {
+
+        MapStatus mapStatus = new MapStatus.Builder()
+                .zoom(19)// 缩放的级别：3-21
+                .overlook(0)// 俯仰的角度:0-－（－45）
+                .build();
+
+        BaiduMapOptions options = new BaiduMapOptions()
+                .mapStatus(mapStatus) // 地图相关状态
+                .compassEnabled(true) // 指南针
+                .zoomGesturesEnabled(true) // 设置是否允许缩放手势
+                .rotateGesturesEnabled(true) // 设置是否允许旋转手势，默认允许
+                .scrollGesturesEnabled(true) // 设置是否允许拖拽手势，默认允许
+                .scaleControlEnabled(false) // 设置是否显示比例尺控件
+                .overlookingGesturesEnabled(false) // 设置是否允许俯视手势，默认允许
+                .zoomControlsEnabled(false) // 设置是否显示缩放控件
+                ;
+
+        MapView mapView = new MapView(getContext(), options);
+
+        // 在布局上添加地图控件：0代表添加到第一位：FrameLayout帧布局，有覆盖的效果
+        mMapFrame.addView(mapView, 0);
+
+        // 拿到地图的控制器
+        mBaiduMap = mapView.getMap();
+    }
+
+    // 卫星按钮
+    @OnClick(R.id.tv_satellite)
+    public void switchMapType() {
+        int mapType = mBaiduMap.getMapType();
+        mapType = mapType == BaiduMap.MAP_TYPE_NORMAL ? BaiduMap.MAP_TYPE_SATELLITE : BaiduMap.MAP_TYPE_NORMAL;
+        String msg = mapType == BaiduMap.MAP_TYPE_NORMAL ? "卫星" : "普通";
+        mBaiduMap.setMapType(mapType);
+        mTvSatellite.setText(msg);
+
+    }
+
+    // 指南针
+    @OnClick(R.id.tv_compass)
+    public void switchCompass() {
+        boolean compassEnabled = mBaiduMap.getUiSettings().isCompassEnabled();
+        mBaiduMap.getUiSettings().setCompassEnabled(!compassEnabled);
+    }
+
+    // 缩放的两个按钮
+    @OnClick({R.id.iv_scaleUp, R.id.iv_scaleDown})
+    public void scaleMap(View view) {
+        switch (view.getId()) {
+            case R.id.iv_scaleUp:
+                mBaiduMap.setMapStatus(MapStatusUpdateFactory.zoomIn());
+                break;
+            case R.id.iv_scaleDown:
+                mBaiduMap.setMapStatus(MapStatusUpdateFactory.zoomOut());
+                break;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        switch(requestCode)
+        {
+            // requestCode即所声明的权限获取码，在checkSelfPermission时传入
+            case ACCESS_COARSE_LOCATION:
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                // 获取到权限，作相应处理（调用定位SDK应当确保相关权限均被授权，否则可能引起定位失败）
+                Log.i("TAG","获取到了");
+                mLocationClient.requestLocation();
+            }
+            else
+            {
+                // 没有获取到权限，做特殊处理
+                Toast.makeText(getContext(), "未获取到权限", Toast.LENGTH_SHORT).show();
+            }
+            break;
+            default:
+                break;
+        }
+
     }
 }
