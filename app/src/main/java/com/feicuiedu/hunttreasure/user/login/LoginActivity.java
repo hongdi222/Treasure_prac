@@ -18,7 +18,8 @@ import com.feicuiedu.hunttreasure.R;
 import com.feicuiedu.hunttreasure.commons.ActivityUtils;
 import com.feicuiedu.hunttreasure.commons.RegexUtils;
 import com.feicuiedu.hunttreasure.components.AlertDialogFragment;
-import com.feicuiedu.hunttreasure.home.HomeActivity;
+import com.feicuiedu.hunttreasure.treasure.HomeActivity;
+import com.feicuiedu.hunttreasure.user.User;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -133,7 +134,7 @@ public class LoginActivity extends AppCompatActivity implements LoginView{
         }
 
         // 都没错，进行登陆的操作
-        new LoginPresenter(this).login();
+        new LoginPresenter(this).login(new User(mUserName,mPassword));
     }
 
     @Override

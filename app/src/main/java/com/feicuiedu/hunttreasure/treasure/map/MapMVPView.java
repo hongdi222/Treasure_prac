@@ -1,4 +1,4 @@
-package com.feicuiedu.hunttreasure.home.map;
+package com.feicuiedu.hunttreasure.treasure.map;
 
 import com.baidu.mapapi.model.LatLng;
 

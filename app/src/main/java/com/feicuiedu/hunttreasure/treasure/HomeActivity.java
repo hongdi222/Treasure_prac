@@ -1,4 +1,4 @@
-package com.feicuiedu.hunttreasure.home;
+package com.feicuiedu.hunttreasure.treasure;
 
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;

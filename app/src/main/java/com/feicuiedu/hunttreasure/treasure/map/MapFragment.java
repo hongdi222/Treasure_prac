@@ -1,4 +1,4 @@
-package com.feicuiedu.hunttreasure.home.map;
+package com.feicuiedu.hunttreasure.treasure.map;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -8,7 +8,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -52,7 +51,6 @@ import com.feicuiedu.hunttreasure.R;
 import com.feicuiedu.hunttreasure.commons.ActivityUtils;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by gqq on 17/1/2.
