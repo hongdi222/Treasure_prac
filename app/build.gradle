@@ -43,4 +43,7 @@ dependencies {
     // 处理圆角的图片
     compile 'com.pkmmte.view:circularimageview:1.1'
     compile project(':baidumap')
+    compile 'com.squareup.retrofit2:retrofit:2.1.0'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.5.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.1.0'
 }

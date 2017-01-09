@@ -1,7 +1,6 @@
 package com.feicuiedu.hunttreasure.user.register;
 
 import android.app.ProgressDialog;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -16,9 +15,8 @@ import com.feicuiedu.hunttreasure.R;
 import com.feicuiedu.hunttreasure.commons.ActivityUtils;
 import com.feicuiedu.hunttreasure.commons.RegexUtils;
 import com.feicuiedu.hunttreasure.components.AlertDialogFragment;
-import com.feicuiedu.hunttreasure.home.HomeActivity;
-
-import org.w3c.dom.Text;
+import com.feicuiedu.hunttreasure.treasure.HomeActivity;
+import com.feicuiedu.hunttreasure.user.User;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -112,7 +110,7 @@ public class RegisterActivity extends AppCompatActivity implements RegisterView{
             return;
 
         }
-        new RegisterPresenter(this).register();
+        new RegisterPresenter(this).register(new User(mUsername,mPassword));
 
     }
 

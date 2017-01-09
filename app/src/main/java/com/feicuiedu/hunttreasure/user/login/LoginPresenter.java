@@ -2,6 +2,14 @@ package com.feicuiedu.hunttreasure.user.login;
 
 import android.os.AsyncTask;
 
+import com.feicuiedu.hunttreasure.net.NetClient;
+import com.feicuiedu.hunttreasure.user.User;
+import com.feicuiedu.hunttreasure.user.UserPrefs;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 /**
  * Created by gqq on 17/1/2.
  */
@@ -9,6 +17,7 @@ import android.os.AsyncTask;
 public class LoginPresenter {
 
     private LoginView mLoginView;
+    private Call<LoginResult> mLoginCall;
 
     /**
      * 两种方式拿到视图方法：
@@ -21,49 +30,47 @@ public class LoginPresenter {
         this.mLoginView = loginView;
     }
 
-    public void login(){
+    public void login(User user){
         // 完成登陆
+        mLoginView.showProgress();
 
-        /**
-         * 3个泛型：
-         * 3. 1. 启动任务输入的参数：请求的地址、上传的数据等
-         * 3. 2. 后台任务执行的进度：一般是Integer类型(int的包装类)
-         * 3. 3. 后台返回的结果类型：比如String类型、Void等
-         *
-         */
+        if (mLoginCall!=null){
+            mLoginCall.cancel();
+        }
 
-        new AsyncTask<Void, Integer, Void>() {
+        mLoginCall = NetClient.getInstances().getTreasureApi().login(user);
+        mLoginCall.enqueue(loginCallBack);
+    }
 
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
+    private Callback<LoginResult> loginCallBack = new Callback<LoginResult>() {
 
-                mLoginView.showProgress();
+        @Override
+        public void onResponse(Call<LoginResult> call, Response<LoginResult> response) {
 
-            }
-
-            @Override
-            protected Void doInBackground(Void... params) {
-
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            mLoginView.hideProgress();
+            if (response.isSuccessful()){
+                LoginResult result = response.body();
+                if (result==null){
+                    mLoginView.showMessage("未知错误");
+                    return;
                 }
 
-                return null;
+                mLoginView.showMessage(result.getMsg());
+                if (result.getCode()==1){
+                    UserPrefs.getInstance().setPhoto(NetClient.BASE_URL+result.getIconUrl());
+                    UserPrefs.getInstance().setTokenid(result.getTokenId());
+                    mLoginView.navigationToHome();
+                }
+
+                return;
             }
+        }
 
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
-
-                mLoginView.hideProgress();
-                mLoginView.showMessage("登陆成功");
-                mLoginView.navigationToHome();
-
-            }
-        }.execute();
-    }
+        @Override
+        public void onFailure(Call<LoginResult> call, Throwable t) {
+            mLoginView.showMessage("请求失败"+t.getMessage());
+            mLoginView.hideProgress();
+        }
+    };
 
 }
