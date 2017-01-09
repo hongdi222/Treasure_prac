@@ -61,9 +61,6 @@ import java.util.Map;
 public class MapFragment extends Fragment implements MapMVPView {
 
 
-    private static final int BAIDU_READ_PHONE_STATE = 100;
-    private static final int ACCESS_COARSE_LOCATION = 100;
-
     @BindView(R.id.iv_located)
     ImageView mIvLocated;
     @BindView(R.id.btn_HideHere)
@@ -94,15 +91,6 @@ public class MapFragment extends Fragment implements MapMVPView {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_map, container);
-
-//        if (ContextCompat.checkSelfPermission(getContext(),Manifest.permission.ACCESS_COARSE_LOCATION)==PackageManager.PERMISSION_DENIED) {
-        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            Log.i("TAG", "需要权限");
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, ACCESS_COARSE_LOCATION);
-        } else {
-            Toast.makeText(getContext(), "不需要获取运行权限", Toast.LENGTH_SHORT).show();
-            Log.i("TAG", "不需要权限");
-        }
 
         mActivityUtils = new ActivityUtils(this);
 
@@ -349,27 +337,6 @@ public class MapFragment extends Fragment implements MapMVPView {
         options.icon(dot);
         options.anchor(0.5f, 0.5f);
         mBaiduMap.addOverlay(options);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        switch (requestCode) {
-            // requestCode即所声明的权限获取码，在checkSelfPermission时传入
-            case ACCESS_COARSE_LOCATION:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // 获取到权限，作相应处理（调用定位SDK应当确保相关权限均被授权，否则可能引起定位失败）
-                    Log.i("TAG", "获取到了");
-                    mLocationClient.requestLocation();
-                } else {
-                    // 没有获取到权限，做特殊处理
-                    Toast.makeText(getContext(), "未获取到权限", Toast.LENGTH_SHORT).show();
-                }
-                break;
-            default:
-                break;
-        }
 
     }
 
