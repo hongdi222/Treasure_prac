@@ -2,6 +2,7 @@ package com.feicuiedu.hunttreasure.treasure;
 
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.utils.DistanceUtil;
+import com.feicuiedu.hunttreasure.treasure.map.MapFragment;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
@@ -93,5 +94,16 @@ public class Treasure implements Serializable{
     public int getSize() {
         return size;
     }
+
+    public double distanceToMyLocation(){
+        // 我的当前位置
+        LatLng myLocation = MapFragment.getMyLocation();
+        if(myLocation == null){
+            return 0.00d;
+        }
+        // 当前宝藏的位置
+        LatLng target = new LatLng(latitude, longitude);
+        return DistanceUtil.getDistance(target, myLocation);
+    };
 
 }

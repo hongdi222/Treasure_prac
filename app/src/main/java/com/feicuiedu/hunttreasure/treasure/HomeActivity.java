@@ -2,6 +2,7 @@ package com.feicuiedu.hunttreasure.treasure;
 
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -14,6 +15,7 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.feicuiedu.hunttreasure.R;
+import com.feicuiedu.hunttreasure.treasure.map.MapFragment;
 import com.feicuiedu.hunttreasure.user.UserPrefs;
 
 import butterknife.BindView;
@@ -26,6 +28,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     NavigationView mNavigation;
     @BindView(R.id.drawerLayout)
     DrawerLayout mDrawerLayout;
+    private MapFragment mMapFragment;
     private ImageView mIvIcon;
 
     /**
@@ -48,6 +51,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     public void onContentChanged() {
         super.onContentChanged();
         ButterKnife.bind(this);
+
+        mMapFragment = (MapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFragment);
 
         TreasureRepo.getInstance().clear();
 
@@ -103,6 +108,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     public boolean onNavigationItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.menu_hide:
+                mMapFragment.changeUiMode(2);
                 break;
         }
         // 无论选择什么抽屉都会关闭
@@ -116,7 +122,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         if (mDrawerLayout.isDrawerOpen(GravityCompat.START)){
             mDrawerLayout.closeDrawer(GravityCompat.START);
         }else {
-            super.onBackPressed();
+            if (mMapFragment.onClickBack()) {
+                super.onBackPressed();
+            }
         }
 
     }
