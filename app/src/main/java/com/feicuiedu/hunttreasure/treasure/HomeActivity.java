@@ -30,7 +30,6 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
      * 1. 处理侧滑
      * 2. 搭建宝藏页面：百度地图的集成和基本功能实现
      */
-
     /**
      * 侧滑：
      * 1. 布局：删除布局，重新进行搭建，展示效果
