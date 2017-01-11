@@ -49,6 +49,8 @@ import com.baidu.mapapi.search.geocode.ReverseGeoCodeOption;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import com.feicuiedu.hunttreasure.R;
 import com.feicuiedu.hunttreasure.commons.ActivityUtils;
+import com.feicuiedu.hunttreasure.treasure.Area;
+import com.feicuiedu.hunttreasure.treasure.Treasure;
 
 import java.util.List;
 
@@ -78,11 +80,12 @@ public class MapFragment extends Fragment implements MapMVPView {
 
     private BaiduMap mBaiduMap;
     private LocationClient mLocationClient;
-    private LatLng mMyCurrentLocation;
+    private static LatLng mMyCurrentLocation;
     private LatLng mCurrentStatus;
     private GeoCoder mGeoCoder;
     private ActivityUtils mActivityUtils;
     private Marker mCurrentMarker;
+    private MapPresenter mPresenter;
 
     @Nullable
     @Override
@@ -91,6 +94,8 @@ public class MapFragment extends Fragment implements MapMVPView {
         View view = inflater.inflate(R.layout.fragment_map, container);
 
         mActivityUtils = new ActivityUtils(this);
+
+        mPresenter = new MapPresenter(this);
 
         ButterKnife.bind(this, view);
         return view;
@@ -223,8 +228,8 @@ public class MapFragment extends Fragment implements MapMVPView {
         @Override
         public boolean onMarkerClick(Marker marker) {
 
+            if (mCurrentMarker != null) mCurrentMarker.setVisible(true);
             mCurrentMarker = marker;
-
             // 设置Marker不可见
             mCurrentMarker.setVisible(false);
             InfoWindow infoWindow = new InfoWindow(dot_expand, marker.getPosition(), 0, infoWindowClickListener);
@@ -237,7 +242,7 @@ public class MapFragment extends Fragment implements MapMVPView {
     private InfoWindow.OnInfoWindowClickListener infoWindowClickListener = new InfoWindow.OnInfoWindowClickListener() {
         @Override
         public void onInfoWindowClick() {
-            if (mCurrentMarker!=null){
+            if (mCurrentMarker != null) {
                 mCurrentMarker.setVisible(true);
             }
             mBaiduMap.hideInfoWindow();
@@ -322,20 +327,42 @@ public class MapFragment extends Fragment implements MapMVPView {
     }
 
     private void updateMapArea(LatLng latLng) {
-        new MapPresenter(this).getTreasure(latLng);
+
+        MapStatus mapStatus = mBaiduMap.getMapStatus();
+        double lng = mapStatus.target.longitude;
+        double lat = mapStatus.target.latitude;
+        // 计算出你的Area  23.999  15.130
+        //              24,23  ,  16,15去确定Area
+        Area area = new Area();
+        area.setMaxLat(Math.ceil(lat));  // lat向上取整
+        area.setMaxLng(Math.ceil(lng));  // lng向上取速
+        area.setMinLat(Math.floor(lat));  // lat向下取整
+        area.setMinLng(Math.floor(lng));  // lng向下取整
+        // 执行业务,根据Area去获取宝藏
+        mPresenter.getTreasure(area);
+
     }
 
     private BitmapDescriptor dot = BitmapDescriptorFactory.fromResource(R.mipmap.treasure_dot);
     private BitmapDescriptor dot_expand = BitmapDescriptorFactory.fromResource(R.mipmap.treasure_expanded);
 
-    public void addMarker(LatLng latLng) {
+    public void addMarker(LatLng latLng, int treasureId) {
 
         MarkerOptions options = new MarkerOptions();
         options.position(latLng);
         options.icon(dot);
         options.anchor(0.5f, 0.5f);
+
+        Bundle bundle = new Bundle();
+        bundle.putInt("id", treasureId);
+        options.extraInfo(bundle);
+
         mBaiduMap.addOverlay(options);
 
+    }
+
+    public static LatLng getMyLocation(){
+        return mMyCurrentLocation;
     }
 
     @Override
@@ -344,12 +371,16 @@ public class MapFragment extends Fragment implements MapMVPView {
     }
 
     @Override
-    public void setData(List<LatLng> list) {
+    public void setData(List<Treasure> list) {
 
-        Log.i("TAG","list:"+list.size());
-        for (LatLng lists : list) {
-            addMarker(lists);
-            Log.i("TAG","list数据:lat"+lists.latitude+"-----lng"+lists.longitude);
+        Log.i("TAG",list.size()+"");
+        mBaiduMap.clear();
+
+        for (Treasure treasure :
+                list) {
+            LatLng latLng = new LatLng(treasure.getLatitude(), treasure.getLongitude());
+            Log.i("TAG","lat:"+treasure.getId()+","+latLng.latitude+","+latLng.longitude);
+            addMarker(latLng, treasure.getId());
         }
     }
 }

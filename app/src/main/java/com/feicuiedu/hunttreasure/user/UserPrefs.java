@@ -5,9 +5,6 @@ import android.content.SharedPreferences;
 
 /**
  * 用户仓库,使用前必须先对其进行初始化 init(),否则就报错啦！！！
- * <p/>
- * 作者：yuanchao on 2016/7/14 0014 17:16
- * 邮箱：yuanchao@feicuiedu.com
  */
 public class UserPrefs {
 
@@ -34,7 +31,7 @@ public class UserPrefs {
     }
 
     public void setTokenid(int tokenid) {
-        preferences.edit().putInt(KEY_TOKENID, tokenid).apply();
+        preferences.edit().putInt(KEY_TOKENID, tokenid).commit();
     }
 
     public void setPhoto(String photoUrl) {
@@ -47,5 +44,9 @@ public class UserPrefs {
 
     public String getPhoto() {
         return preferences.getString(KEY_PHOTO, null);
+    }
+
+    public void clearUser(){
+        preferences.edit().clear().commit();
     }
 }

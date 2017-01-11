@@ -7,12 +7,17 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
+
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
+import com.feicuiedu.hunttreasure.MainActivity;
 import com.feicuiedu.hunttreasure.R;
+import com.feicuiedu.hunttreasure.commons.ActivityUtils;
+import com.feicuiedu.hunttreasure.user.UserPrefs;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -25,6 +30,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     @BindView(R.id.drawerLayout)
     DrawerLayout mDrawerLayout;
     private ImageView mIvIcon;
+
+    private ActivityUtils mActivityUtils;
 
     /**
      * 1. 处理侧滑
@@ -45,6 +52,10 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     public void onContentChanged() {
         super.onContentChanged();
         ButterKnife.bind(this);
+
+        mActivityUtils = new ActivityUtils(this);
+
+        TreasureRepo.getInstance().clear();
 
 
          // 1.处理toolbar
@@ -81,10 +92,29 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        String photo = UserPrefs.getInstance().getPhoto();
+        if (photo!=null){
+            Log.i("start","photo"+photo);
+            Glide.with(this)
+                    .load(photo)
+                    .error(getDrawable(R.mipmap.user_icon))
+                    .placeholder(getDrawable(R.mipmap.user_icon))
+                    .into(mIvIcon);
+        }
+    }
+
+    @Override
     public boolean onNavigationItemSelected(MenuItem item) {
 
         switch (item.getItemId()){
             case R.id.menu_hide:
+                break;
+            case R.id.menu_logout:// 退出登录
+                UserPrefs.getInstance();
+                mActivityUtils.startActivity(MainActivity.class);
+                finish();
                 break;
         }
         // 无论选择什么抽屉都会关闭

@@ -1,6 +1,7 @@
 package com.feicuiedu.hunttreasure.treasure.map;
 
 import com.baidu.mapapi.model.LatLng;
+import com.feicuiedu.hunttreasure.treasure.Treasure;
 
 import java.util.List;
 
@@ -12,6 +13,6 @@ public interface MapMVPView {
 
     void showMessage(String msg);
 
-    void setData(List<LatLng> list);
+    void setData(List<Treasure> list);
 
 }
