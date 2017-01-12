@@ -3,6 +3,7 @@ package com.feicuiedu.hunttreasure.treasure;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -10,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -18,6 +20,7 @@ import com.bumptech.glide.Glide;
 import com.feicuiedu.hunttreasure.MainActivity;
 import com.feicuiedu.hunttreasure.R;
 import com.feicuiedu.hunttreasure.commons.ActivityUtils;
+import com.feicuiedu.hunttreasure.treasure.list.TreasureListFragment;
 import com.feicuiedu.hunttreasure.treasure.map.MapFragment;
 import com.feicuiedu.hunttreasure.user.UserPrefs;
 import com.feicuiedu.hunttreasure.user.account.AccountActivity;
@@ -36,6 +39,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     private ImageView mIvIcon;
 
     private ActivityUtils mActivityUtils;
+    private TreasureListFragment mListFragment;
+    private FragmentManager mFragmentManager;
 
     /**
      * 1. 处理侧滑
@@ -58,7 +63,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         ButterKnife.bind(this);
 
         mActivityUtils = new ActivityUtils(this);
-        mMapFragment = (MapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFragment);
+        mFragmentManager = getSupportFragmentManager();
+        mMapFragment = (MapFragment) mFragmentManager.findFragmentById(R.id.mapFragment);
 
         TreasureRepo.getInstance().clear();
 
@@ -126,6 +132,27 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         // 无论选择什么抽屉都会关闭
         mDrawerLayout.closeDrawer(GravityCompat.START);
         return true;// 返回true，表示被消费，被选中
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void showListFragment(){
+        if (mListFragment!=null&&mListFragment.isAdded()){
+
+        }
     }
 
     @Override
