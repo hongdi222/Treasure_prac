@@ -32,8 +32,6 @@ public class MapPresenter {
     public void getTreasure(Area area){
 
         if (TreasureRepo.getInstance().isCached(area)){
-            mMapMVPView.setData(TreasureRepo.getInstance().getTreasure());
-            Log.i("TAG","getTreasure缓存，未请求");
             return;
         }
 

@@ -2,6 +2,7 @@ package com.feicuiedu.hunttreasure.treasure;
 
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -17,7 +18,9 @@ import com.bumptech.glide.Glide;
 import com.feicuiedu.hunttreasure.MainActivity;
 import com.feicuiedu.hunttreasure.R;
 import com.feicuiedu.hunttreasure.commons.ActivityUtils;
+import com.feicuiedu.hunttreasure.treasure.map.MapFragment;
 import com.feicuiedu.hunttreasure.user.UserPrefs;
+import com.feicuiedu.hunttreasure.user.account.AccountActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -29,6 +32,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     NavigationView mNavigation;
     @BindView(R.id.drawerLayout)
     DrawerLayout mDrawerLayout;
+    private MapFragment mMapFragment;
     private ImageView mIvIcon;
 
     private ActivityUtils mActivityUtils;
@@ -54,13 +58,14 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         ButterKnife.bind(this);
 
         mActivityUtils = new ActivityUtils(this);
+        mMapFragment = (MapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFragment);
 
         TreasureRepo.getInstance().clear();
 
 
-         // 1.处理toolbar
+        // 1.处理toolbar
         setSupportActionBar(mToolbar);
-        if (getSupportActionBar()!=null){
+        if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
 
@@ -85,7 +90,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         mIvIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: 17/1/2 更新头像
+                mActivityUtils.startActivity(AccountActivity.class);
             }
         });
 
@@ -95,8 +100,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     protected void onStart() {
         super.onStart();
         String photo = UserPrefs.getInstance().getPhoto();
-        if (photo!=null){
-            Log.i("start","photo"+photo);
+        if (photo != null) {
+            Log.i("start", "photo" + photo);
             Glide.with(this)
                     .load(photo)
                     .error(getDrawable(R.mipmap.user_icon))
@@ -108,8 +113,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
 
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.menu_hide:
+                mMapFragment.changeUiMode(2);
                 break;
             case R.id.menu_logout:// 退出登录
                 UserPrefs.getInstance();
@@ -125,10 +131,12 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onBackPressed() {
 
-        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)){
+        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawer(GravityCompat.START);
-        }else {
-            super.onBackPressed();
+        } else {
+            if (mMapFragment.onClickBack()) {
+                super.onBackPressed();
+            }
         }
 
     }

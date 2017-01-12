@@ -3,7 +3,6 @@ package com.feicuiedu.hunttreasure.treasure.map;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -37,11 +36,6 @@ import com.baidu.mapapi.map.Marker;
 import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-
 import com.baidu.mapapi.search.geocode.GeoCodeResult;
 import com.baidu.mapapi.search.geocode.GeoCoder;
 import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
@@ -49,10 +43,17 @@ import com.baidu.mapapi.search.geocode.ReverseGeoCodeOption;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import com.feicuiedu.hunttreasure.R;
 import com.feicuiedu.hunttreasure.commons.ActivityUtils;
+import com.feicuiedu.hunttreasure.components.TreasureView;
 import com.feicuiedu.hunttreasure.treasure.Area;
 import com.feicuiedu.hunttreasure.treasure.Treasure;
+import com.feicuiedu.hunttreasure.treasure.TreasureRepo;
+import com.feicuiedu.hunttreasure.treasure.detail.TreasureDetailActivity;
 
 import java.util.List;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * Created by gqq on 17/1/2.
@@ -77,6 +78,10 @@ public class MapFragment extends Fragment implements MapMVPView {
     FrameLayout mMapFrame;
     @BindView(R.id.tv_satellite)
     TextView mTvSatellite;
+    @BindView(R.id.treasureView)
+    TreasureView mTreasureView;
+    @BindView(R.id.hide_treasure)
+    RelativeLayout mHideTreasure;
 
     private BaiduMap mBaiduMap;
     private LocationClient mLocationClient;
@@ -235,6 +240,12 @@ public class MapFragment extends Fragment implements MapMVPView {
             InfoWindow infoWindow = new InfoWindow(dot_expand, marker.getPosition(), 0, infoWindowClickListener);
             // 显示一个信息窗口(icon,位置,Y,监听)
             mBaiduMap.showInfoWindow(infoWindow);
+
+            Treasure treasure = TreasureRepo.getInstance().getTreasure(marker.getExtraInfo().getInt("id"));
+            mTreasureView.bindTreasure(treasure);
+
+            changeUiMode(UI_MODE_SELECT);
+
             return true;
         }
     };
@@ -242,10 +253,8 @@ public class MapFragment extends Fragment implements MapMVPView {
     private InfoWindow.OnInfoWindowClickListener infoWindowClickListener = new InfoWindow.OnInfoWindowClickListener() {
         @Override
         public void onInfoWindowClick() {
-            if (mCurrentMarker != null) {
-                mCurrentMarker.setVisible(true);
-            }
-            mBaiduMap.hideInfoWindow();
+
+            changeUiMode(UI_MODE_NORMAL);
         }
     };
 
@@ -267,7 +276,6 @@ public class MapFragment extends Fragment implements MapMVPView {
 
             if (target != MapFragment.this.mCurrentStatus) {
 
-                // TODO: 17/1/4  会有数据请求
                 updateMapArea(target);
 
                 ReverseGeoCodeOption geoCodeOption = new ReverseGeoCodeOption();
@@ -314,6 +322,7 @@ public class MapFragment extends Fragment implements MapMVPView {
         }
     }
 
+    // 定位
     @OnClick(R.id.tv_located)
     public void moveToLocation() {
         MapStatus mapStatus = new MapStatus.Builder()
@@ -324,6 +333,18 @@ public class MapFragment extends Fragment implements MapMVPView {
                 .build();
         MapStatusUpdate mapStatuaUpdate = MapStatusUpdateFactory.newMapStatus(mapStatus);
         mBaiduMap.animateMapStatus(mapStatuaUpdate);
+    }
+
+    @OnClick(R.id.treasureView)
+    public void clickTreasureView(){
+        int id = mCurrentMarker.getExtraInfo().getInt("id");
+        Treasure treasure = TreasureRepo.getInstance().getTreasure(id);
+        TreasureDetailActivity.open(getContext(),treasure);
+    }
+
+    @OnClick(R.id.hide_treasure)
+    public void clickHideTreasure(){
+
     }
 
     private void updateMapArea(LatLng latLng) {
@@ -358,12 +379,63 @@ public class MapFragment extends Fragment implements MapMVPView {
         options.extraInfo(bundle);
 
         mBaiduMap.addOverlay(options);
-
     }
 
-    public static LatLng getMyLocation(){
+    public static LatLng getMyLocation() {
         return mMyCurrentLocation;
     }
+
+    private static final int UI_MODE_NORMAL = 0;
+    private static final int UI_MODE_SELECT = 1;
+    private static final int UI_MODE_HIDE = 2;
+
+    private static int mUIMode = UI_MODE_NORMAL;
+
+    public void changeUiMode(int uiMode) {
+        if (mUIMode == uiMode) return;
+        mUIMode = uiMode;
+        switch (uiMode) {
+            case UI_MODE_NORMAL:
+                if (mCurrentMarker != null) {
+                    mCurrentMarker.setVisible(true);
+                }
+                mBaiduMap.hideInfoWindow();
+                mLayoutBottom.setVisibility(View.GONE);
+                mCenterLayout.setVisibility(View.GONE);
+                break;
+            case UI_MODE_SELECT:
+                mLayoutBottom.setVisibility(View.VISIBLE);
+                mTreasureView.setVisibility(View.VISIBLE);
+                mCenterLayout.setVisibility(View.GONE);
+                mHideTreasure.setVisibility(View.GONE);
+                break;
+            case UI_MODE_HIDE:
+                if (mCurrentMarker != null) {
+                    mCurrentMarker.setVisible(true);
+                }
+                mBaiduMap.hideInfoWindow();
+                mCenterLayout.setVisibility(View.VISIBLE);
+                mLayoutBottom.setVisibility(View.GONE);
+                mBtnHideHere.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mLayoutBottom.setVisibility(View.VISIBLE);
+                        mTreasureView.setVisibility(View.GONE);
+                        mHideTreasure.setVisibility(View.VISIBLE);
+                    }
+                });
+                break;
+        }
+    }
+
+    public boolean onClickBack(){
+        if (mUIMode!=UI_MODE_NORMAL){
+            changeUiMode(UI_MODE_NORMAL);
+            return false;
+        }
+        return true;
+    }
+
 
     @Override
     public void showMessage(String msg) {
@@ -373,13 +445,9 @@ public class MapFragment extends Fragment implements MapMVPView {
     @Override
     public void setData(List<Treasure> list) {
 
-        Log.i("TAG",list.size()+"");
-        mBaiduMap.clear();
-
         for (Treasure treasure :
                 list) {
             LatLng latLng = new LatLng(treasure.getLatitude(), treasure.getLongitude());
-            Log.i("TAG","lat:"+treasure.getId()+","+latLng.latitude+","+latLng.longitude);
             addMarker(latLng, treasure.getId());
         }
     }

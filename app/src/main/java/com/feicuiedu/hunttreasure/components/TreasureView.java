@@ -13,6 +13,9 @@ import com.feicuiedu.hunttreasure.R;
 import com.feicuiedu.hunttreasure.treasure.Treasure;
 import com.feicuiedu.hunttreasure.treasure.map.MapFragment;
 
+import com.feicuiedu.hunttreasure.R;
+import com.feicuiedu.hunttreasure.treasure.Treasure;
+
 import java.text.DecimalFormat;
 
 import butterknife.BindView;
@@ -20,6 +23,7 @@ import butterknife.ButterKnife;
 
 /**
  * 宝藏卡片视图
+<<<<<<< HEAD
  */
 public class TreasureView extends RelativeLayout {
 
@@ -74,4 +78,5 @@ public class TreasureView extends RelativeLayout {
         String text = decimalFormat.format(distance/1000)+"km";
         tv_Distance.setText(text);
     }
+
 }
